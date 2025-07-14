@@ -3,101 +3,76 @@
 
 set -euo pipefail
 
-#==================== TASK FUNCTIONS ======================
+#====================== LOGGING ==========================
+CYAN="\033[0;36m"
+YELLOW="\033[0;33m"
+GREEN="\033[0;32m"
+RED="\033[0;31m"
+RESET="\033[0m"
 
-add_gpg_key() {
-  banner "Adding Cloudflare GPG key..."
+banner() { echo -e "\n${CYAN}==> $1${RESET}"; }
+info() { echo -e "${YELLOW}[INFO] $1${RESET}"; }
+success() { echo -e "${GREEN}[✓] $1${RESET}"; }
+error() { echo -e "${RED}[✗] $1${RESET}"; }
 
-  local key_path="/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg"
-  if [ -f "$key_path" ]; then
-    skip "GPG key already present"
-  else
+#==================== ENSURE DEPENDENCIES ===================
+ensure_deps() {
+  for cmd in curl gpg; do
+    if ! command -v "$cmd" &>/dev/null; then
+      info "$cmd not found. Installing..."
+      sudo apt update -qq
+      sudo apt install -y "$cmd"
+      success "$cmd installed"
+    else
+      info "$cmd already installed"
+    fi
+  done
+}
+
+#==================== ADD REPO & INSTALL ====================
+setup_warp() {
+  local keyring="/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg"
+  local source_list="/etc/apt/sources.list.d/cloudflare-client.list"
+
+  banner "Adding Cloudflare WARP GPG key..."
+  if [ ! -f "$keyring" ]; then
     info "Downloading and installing GPG key..."
-    curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor -o "$key_path"
+    curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor --output "$keyring"
     success "GPG key added"
-  fi
-}
-
-add_warp_repo() {
-  banner "Adding Cloudflare WARP APT repository..."
-
-  local repo_file="/etc/apt/sources.list.d/cloudflare-client.list"
-  if [ -f "$repo_file" ]; then
-    skip "APT repo already exists"
   else
-    local distro
-    distro=$(lsb_release -cs)
-    echo "deb [signed-by=/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg] https://pkg.cloudflareclient.com/ $distro main" | sudo tee "$repo_file" > /dev/null
-    sudo apt-get update -qq
-    success "WARP repository added"
+    success "Cloudflare WARP GPG key already present"
   fi
-}
 
-install_warp_cli() {
-  banner "Installing Cloudflare WARP CLI..."
-
-  if command -v warp-cli &>/dev/null; then
-    skip "warp-cli already installed"
+  banner "Adding Cloudflare WARP repository..."
+  if [ ! -f "$source_list" ]; then
+    echo "deb [signed-by=$keyring] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | sudo tee "$source_list" > /dev/null
+    success "WARP repo added"
   else
-    sudo apt-get install -y cloudflare-warp
-    success "warp-cli installed"
+    success "Cloudflare WARP repo already present"
   fi
-}
 
-register_device() {
-  banner "Optional WARP registration"
-  read -p "🆕 Register this device with Cloudflare WARP now? (y/n): " answer
-  if [[ "$answer" =~ ^[Yy]$ ]]; then
-    info "Registering..."
-    warp-cli --accept-tos registration new
-    success "Device registered with WARP"
+  banner "Updating package lists..."
+  sudo apt update -qq
+
+  banner "Installing Cloudflare WARP client..."
+  if ! command -v warp-cli &>/dev/null; then
+    sudo apt install -y cloudflare-warp
+    success "Cloudflare WARP installed"
   else
-    skip "User skipped registration"
+    success "Cloudflare WARP already installed"
   fi
 }
 
-show_usage_guide() {
-  banner "warp-cli usage quick reference"
-  echo -e "${CYAN}
-📘 WARP CLI Quick Reference:
-
-  ➤ Connect:    warp-cli connect
-  ➤ Status:     warp-cli status
-  ➤ Disconnect: warp-cli disconnect
-
-⚙️ Mode switching:
-  🔸 DNS only (DoH):     warp-cli mode doh
-  🔹 WARP + DoH:         warp-cli mode warp+doh
-
-👨‍👩‍👧‍👦 1.1.1.1 for Families:
-  🚫 Off:                warp-cli dns families off
-  🛡️ Malware filter:     warp-cli dns families malware
-  🔞 Full filter:        warp-cli dns families full
-
-📚 More commands: warp-cli --help
-${RESET}"
-}
-
-#====================== EXECUTION ========================
+#====================== RUN SCRIPT =========================
 
 main() {
   sudo -v
   ( while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done ) 2>/dev/null &
 
-  add_gpg_key
-  add_warp_repo
-  install_warp_cli
-  register_device
-  show_usage_guide
+  ensure_deps
+  setup_warp
 
-  echo -e "\n${GREEN}🎉 WARP setup complete!${RESET}"
+  echo -e "\n${GREEN}🎉 Cloudflare WARP setup completed! Use 'warp-cli' to manage.${RESET}"
 }
-
-#====================== LOGGING ==========================
-GREEN="\e[32m"; BLUE="\e[34m"; YELLOW="\e[33m"; RED="\e[31m"; CYAN="\e[36m"; RESET="\e[0m"
-banner() { echo -e "\n${BLUE}==> $1${RESET}"; }
-success() { echo -e "${GREEN}[✓] $1${RESET}"; }
-info() { echo -e "${YELLOW}[INFO] $1${RESET}"; }
-skip() { echo -e "${BLUE}[SKIP] $1${RESET}"; }
 
 main "$@"
