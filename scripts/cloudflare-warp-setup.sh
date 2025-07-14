@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cloudflare WARP Setup Script for Ubuntu (by M Ash)
+# Cloudflare WARP Setup Script for Ubuntu (by M Ash, 2025+)
 
 set -euo pipefail
 
@@ -14,6 +14,7 @@ banner()  { echo -e "\n${CYAN}==> $1${RESET}"; }
 info()    { echo -e "${YELLOW}[INFO] $1${RESET}"; }
 success() { echo -e "${GREEN}[✓] $1${RESET}"; }
 error()   { echo -e "${RED}[✗] $1${RESET}"; }
+skip()    { echo -e "${CYAN}[SKIP] $1${RESET}"; }
 
 #==================== ENSURE DEPENDENCIES ===================
 ensure_deps() {
@@ -32,35 +33,54 @@ ensure_deps() {
 #==================== ADD REPO & INSTALL ====================
 setup_warp() {
   local keyring="/usr/share/keyrings/cloudflare-warp-archive-keyring.gpg"
-  local source_list="/etc/apt/sources.list.d/cloudflare-client.list"
+  local repo_file="/etc/apt/sources.list.d/cloudflare-client.list"
   local codename
   codename="$(lsb_release -cs)"
 
   banner "Adding Cloudflare WARP GPG key..."
   if [ ! -f "$keyring" ]; then
     curl -fsSL https://pkg.cloudflareclient.com/pubkey.gpg | sudo gpg --yes --dearmor --output "$keyring"
-    success "GPG key added"
+    success "GPG key added to $keyring"
   else
     success "GPG key already exists"
   fi
 
   banner "Adding Cloudflare WARP repository for $codename..."
-  if [ ! -f "$source_list" ]; then
-    echo "deb [signed-by=$keyring] https://pkg.cloudflareclient.com/ $codename main" | sudo tee "$source_list" > /dev/null
-    success "Repo added"
+  if [ ! -f "$repo_file" ]; then
+    echo "deb [signed-by=$keyring] https://pkg.cloudflareclient.com/ $codename main" | sudo tee "$repo_file" > /dev/null
+    success "Repository added to $repo_file"
   else
-    success "Repo already exists"
+    success "Repository already exists"
   fi
 
   banner "Updating package list..."
-  sudo apt update -qq
+  sudo apt-get update -qq
 
   banner "Installing Cloudflare WARP..."
   if ! command -v warp-cli &>/dev/null; then
-    sudo apt install -y cloudflare-warp
+    sudo apt-get install -y cloudflare-warp
     success "Cloudflare WARP installed"
   else
     success "WARP CLI already installed"
+  fi
+}
+
+#==================== OPTIONAL REGISTRATION ====================
+register_prompt() {
+  banner "WARP Registration"
+
+  if ! warp-cli --accept-tos status | grep -q 'Registered'; then
+    echo -e "${YELLOW}🆕 Is this your first time using WARP?${RESET}"
+    read -rp "👉 Register this device now? (y/n): " reg_ans
+
+    if [[ "$reg_ans" =~ ^[Yy]$ ]]; then
+      info "Registering with Cloudflare WARP..."
+      sudo warp-cli --accept-tos register && success "Device registered"
+    else
+      info "Skipping WARP registration"
+    fi
+  else
+    skip "Device already registered"
   fi
 }
 
@@ -71,8 +91,24 @@ main() {
 
   ensure_deps
   setup_warp
+  register_prompt
 
-  echo -e "\n${GREEN}🎉 Cloudflare WARP setup completed successfully! Use 'warp-cli' to get started.${RESET}"
+  echo -e "\n${GREEN}🎉 Cloudflare WARP setup completed!${RESET}"
+  echo -e "${CYAN}
+🧭 Quick Start:
+  ➤ Connect WARP:         warp-cli connect
+  ➤ Check status:         warp-cli status
+  ➤ Disconnect WARP:      warp-cli disconnect
+  ➤ Enable DNS-only:      warp-cli mode doh
+  ➤ Enable full mode:     warp-cli mode warp+doh
+
+👨‍👩‍👧‍👦 Family filter (1.1.1.1 for Families):
+  🚫 Off:                warp-cli dns families off
+  🛡️ Malware filter:     warp-cli dns families malware
+  🔞 Full filter:        warp-cli dns families full
+
+📚 More: warp-cli --help
+${RESET}"
 }
 
 main "$@"
