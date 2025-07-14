@@ -11,9 +11,9 @@ RED="\033[0;31m"
 RESET="\033[0m"
 
 banner() { echo -e "\n${CYAN}==> $1${RESET}"; }
-info() { echo -e "${YELLOW}[INFO] $1${RESET}"; }
-success() { echo -e "${GREEN}[✓] $1${RESET}"; }
-error() { echo -e "${RED}[✗] $1${RESET}"; }
+info()   { echo -e "${YELLOW}[INFO] $1${RESET}"; }
+success(){ echo -e "${GREEN}[✓] $1${RESET}"; }
+error()  { echo -e "${RED}[✗] $1${RESET}"; }
 
 #==================== ENSURE DEPENDENCIES ===================
 ensure_deps() {
@@ -44,9 +44,20 @@ setup_warp() {
   fi
 
   banner "Adding Cloudflare WARP repository..."
+
+  # Force fallback to `jammy` if `noble` is not supported
+  local ubuntu_codename
+  ubuntu_codename="$(lsb_release -cs)"
+  local warp_codename="$ubuntu_codename"
+
+  if [[ "$ubuntu_codename" == "noble" ]]; then
+    info "Cloudflare repo does not support 'noble'. Falling back to 'jammy'."
+    warp_codename="jammy"
+  fi
+
   if [ ! -f "$source_list" ]; then
-    echo "deb [signed-by=$keyring] https://pkg.cloudflareclient.com/ $(lsb_release -cs) main" | sudo tee "$source_list" > /dev/null
-    success "WARP repo added"
+    echo "deb [signed-by=$keyring] https://pkg.cloudflareclient.com/ $warp_codename main" | sudo tee "$source_list" > /dev/null
+    success "Cloudflare WARP repo added ($warp_codename)"
   else
     success "Cloudflare WARP repo already present"
   fi
