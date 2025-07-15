@@ -37,9 +37,31 @@ install_flatpak() {
 
   if ! flatpak remote-list | grep -q flathub; then
     info "Adding Flathub..."
-    sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+    sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo   
     success "Flathub added"
   else skip "Flathub already present"; fi
+}
+
+install_flatseal() {
+  banner "Installing Flatseal (Flatpak permission manager)..."
+
+  if flatpak list --app | grep -i "Flatseal" &>/dev/null; then
+    skip "Flatseal already installed"
+  else
+    flatpak install -y flathub com.github.tchx84.Flatseal
+    success "Flatseal installed"
+  fi
+}
+
+install_gearlever() {
+  banner "Installing Gear Lever (AppImage manager)..."
+
+  if flatpak list --app | grep -i "Gear Lever" &>/dev/null; then
+    skip "Gear Lever already installed"
+  else
+    flatpak install -y flathub it.mijorus.gearlever
+    success "Gear Lever installed"
+  fi
 }
 
 install_extras() {
@@ -111,6 +133,8 @@ main() {
 
   enable_repos
   install_flatpak
+  install_flatseal
+  # install_gearlever
   install_extras
   remove_snap_bloat
   cleanup
