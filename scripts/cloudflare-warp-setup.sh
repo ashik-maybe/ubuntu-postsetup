@@ -65,27 +65,6 @@ setup_warp() {
   fi
 }
 
-#==================== OPTIONAL REGISTRATION ====================
-register_prompt() {
-  banner "WARP Registration"
-
-  # Check if already registered
-  if warp-cli account | grep -q 'Account'; then
-    skip "Device already registered"
-    return
-  fi
-
-  echo -e "${YELLOW}🆕 This device is not registered with Cloudflare WARP.${RESET}"
-  read -rp "👉 Run WARP registration now? (y/n): " reg_ans
-
-  if [[ "$reg_ans" =~ ^[Yy]$ ]]; then
-    info "Running: warp-cli registration new"
-    warp-cli registration new
-  else
-    info "Skipping WARP registration"
-  fi
-}
-
 #====================== RUN SCRIPT =========================
 main() {
   sudo -v
@@ -93,7 +72,6 @@ main() {
 
   ensure_deps
   setup_warp
-  register_prompt
 
   echo -e "\n${GREEN}🎉 Cloudflare WARP setup completed!${RESET}"
   echo -e "${CYAN}
