@@ -48,7 +48,10 @@ install_extras() {
   if dpkg -s ubuntu-restricted-extras &>/dev/null; then
     skip "ubuntu-restricted-extras"
   else
+    # Pre-accept both debconf selections needed
+    echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | sudo debconf-set-selections
     echo "ubuntu-restricted-extras ubuntu-restricted-extras/accept-mscorefonts-eula select true" | sudo debconf-set-selections
+
     sudo apt install -y ubuntu-restricted-extras
     success "Restricted extras installed"
   fi
