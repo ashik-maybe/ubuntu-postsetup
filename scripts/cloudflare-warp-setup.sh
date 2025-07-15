@@ -70,18 +70,20 @@ register_prompt() {
   banner "WARP Registration"
 
   echo -e "${YELLOW}🆕 Is this your first time using WARP?${RESET}"
-  read -p "👉 Register this device now? (y/n): " reg_ans
+  read -rp "👉 Register this device now? (y/n): " reg_ans
 
   if [[ "$reg_ans" =~ ^[Yy]$ ]]; then
     info "Registering new WARP account..."
-    
-    # Auto-accept ToS during registration
-    warp-cli --accept-tos registration new && success "Device registered"
+
+    # Run registration command and auto-accept ToS when prompted
+    (
+      echo "y" | warp-cli registration new
+    ) | grep -v 'Accept Terms of Service' || true
+
+    success "Device registered"
 
     info "Connecting to WARP..."
-    
-    # Auto-accept ToS during connect
-    warp-cli --accept-tos connect && success "Connected to WARP"
+    warp-cli connect && success "Connected to WARP"
 
     info "Verifying WARP connection..."
     curl -s https://www.cloudflare.com/cdn-cgi/trace  | grep -q 'warp=on' && success "WARP connection verified!"
