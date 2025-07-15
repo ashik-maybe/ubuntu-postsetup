@@ -69,18 +69,22 @@ setup_warp() {
 register_prompt() {
   banner "WARP Registration"
 
-  if ! warp-cli --accept-tos status | grep -q 'Registered'; then
-    echo -e "${YELLOW}🆕 Is this your first time using WARP?${RESET}"
-    read -rp "👉 Register this device now? (y/n): " reg_ans
+  echo -e "${YELLOW}🆕 Is this your first time using WARP?${RESET}"
+  read -p "👉 Register this device now? (y/n): " reg_ans
 
-    if [[ "$reg_ans" =~ ^[Yy]$ ]]; then
-      info "Registering with Cloudflare WARP..."
-      sudo warp-cli --accept-tos register && success "Device registered"
-    else
-      info "Skipping WARP registration"
-    fi
+  if [[ "$reg_ans" =~ ^[Yy]$ ]]; then
+    info "Registering new WARP account..."
+    
+    # Auto-accept ToS by piping 'y' into stdin
+    printf 'y\n' | warp-cli registration new > /dev/null && success "Device registered"
+    
+    info "Connecting to WARP..."
+    warp-cli connect > /dev/null && success "Connected to WARP"
+    
+    info "Verifying WARP connection..."
+    curl -s https://www.cloudflare.com/cdn-cgi/trace  | grep -q 'warp=on' && success "WARP connection verified!"
   else
-    skip "Device already registered"
+    skip "Skipping WARP registration"
   fi
 }
 
