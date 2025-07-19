@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Ubuntu Post-Install Setup Script by M Ash
+# Ubuntu Post-Install Setup Script
 
 GREEN="\e[32m"; BLUE="\e[34m"; YELLOW="\e[33m"; RED="\e[31m"; RESET="\e[0m"
 banner() { echo -e "\n${BLUE}==> $1${RESET}"; }
