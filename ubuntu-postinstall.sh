@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 # Ubuntu Post-Install Setup Script by M Ash
 
-set -euo pipefail
+#====================== LOGGING ==========================
+GREEN="\e[32m"; BLUE="\e[34m"; YELLOW="\e[33m"; RED="\e[31m"; RESET="\e[0m"
+banner() { echo -e "\n${BLUE}==> $1${RESET}"; }
+success() { echo -e "${GREEN}[✓] $1${RESET}"; }
+info() { echo -e "${YELLOW}[INFO] $1${RESET}"; }
+skip() { echo -e "${BLUE}[SKIP] $1${RESET}"; }
+error() { echo -e "${RED}[✗] $1${RESET}"; }
 
 #==================== TASK FUNCTIONS ======================
 
@@ -70,7 +76,6 @@ install_extras() {
   if dpkg -s ubuntu-restricted-extras &>/dev/null; then
     skip "ubuntu-restricted-extras"
   else
-    # Pre-accept both debconf selections needed
     echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | sudo debconf-set-selections
     echo "ubuntu-restricted-extras ubuntu-restricted-extras/accept-mscorefonts-eula select true" | sudo debconf-set-selections
 
@@ -114,7 +119,6 @@ remove_snap_bloat() {
   done
 }
 
-
 cleanup() {
   banner "Cleaning up APT and snap cache..."
   sudo apt autoremove -y
@@ -137,23 +141,16 @@ main() {
   sudo -v
   ( while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done ) 2>/dev/null &
 
-  enable_repos
-  install_flatpak
-  install_flatseal
-  # install_gearlever
-  install_extras
-  remove_snap_bloat
-  cleanup
-  enable_trim
+  enable_repos || error "Failed to enable APT repositories"
+  install_flatpak || error "Failed to install Flatpak"
+  install_flatseal || error "Failed to install Flatseal"
+  # install_gearlever || error "Failed to install Gear Lever"
+  install_extras || error "Failed to install ubuntu-restricted-extras"
+  remove_snap_bloat || error "Failed to remove Snap packages"
+  cleanup || error "Failed to clean up system"
+  enable_trim || error "Failed to enable SSD TRIM"
 
   echo -e "\n${GREEN}🎉 Post-install setup done!${RESET}"
 }
-
-#====================== LOGGING ==========================
-GREEN="\e[32m"; BLUE="\e[34m"; YELLOW="\e[33m"; RED="\e[31m"; RESET="\e[0m"
-banner() { echo -e "\n${BLUE}==> $1${RESET}"; }
-success() { echo -e "${GREEN}[✓] $1${RESET}"; }
-info() { echo -e "${YELLOW}[INFO] $1${RESET}"; }
-skip() { echo -e "${BLUE}[SKIP] $1${RESET}"; }
 
 main "$@"
