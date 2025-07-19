@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Setup Gear Lever (AppImage manager) with Flatpak & Flathub auto-install
+# Setup Gear Lever (AppImage manager)
 
 set -euo pipefail
 GREEN="\e[32m"; YELLOW="\e[33m"; BLUE="\e[34m"; RED="\e[31m"; RESET="\e[0m"
