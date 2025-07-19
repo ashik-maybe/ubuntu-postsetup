@@ -82,6 +82,11 @@ install_extras() {
 remove_snap_bloat() {
   banner "Removing unnecessary Snap packages..."
 
+  if ! command -v snap &>/dev/null; then
+    skip "Snap not installed – skipping Snap cleanup"
+    return
+  fi
+
   local whitelist=(
     "snapd"
     "core22"
@@ -108,6 +113,7 @@ remove_snap_bloat() {
     }
   done
 }
+
 
 cleanup() {
   banner "Cleaning up APT and snap cache..."
