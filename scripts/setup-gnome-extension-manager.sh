@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# GNOME Setup Script for Ubuntu (by M Ash)
+# Setup Gnome Extension Manager via Flathub
 
 set -euo pipefail
 
