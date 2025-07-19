@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 #========================================
-# Nix Package Manager Installer for Linux
-# Author: M Ash / Based on It's FOSS tutorial
+# Install Nix Package Manager on non-Nix OS
 #========================================
 
 set -euo pipefail
