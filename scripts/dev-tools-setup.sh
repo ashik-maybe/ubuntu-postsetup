@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 # Installs GitHub Desktop and Visual Studio Code on Ubuntu
 
-set -euo pipefail
+#====================== LOGGING ==========================
+GREEN="\e[32m"; BLUE="\e[34m"; YELLOW="\e[33m"; RED="\e[31m"; RESET="\e[0m"
+banner() { echo -e "\n${BLUE}==> $1${RESET}"; }
+success() { echo -e "${GREEN}[✓] $1${RESET}"; }
+info() { echo -e "${YELLOW}[INFO] $1${RESET}"; }
+skip() { echo -e "${BLUE}[SKIP] $1${RESET}"; }
+error() { echo -e "${RED}[✗] $1${RESET}"; }
 
 #==================== TASK FUNCTIONS ======================
 
@@ -73,17 +79,10 @@ main() {
   sudo -v
   ( while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done ) 2>/dev/null &
 
-  install_github_desktop
-  install_vscode
+  install_github_desktop || error "GitHub Desktop installation failed"
+  install_vscode || error "VS Code installation failed"
 
   echo -e "\n${GREEN}🎉 GitHub Desktop and VS Code setup complete! Happy coding!${RESET}"
 }
-
-#====================== LOGGING ==========================
-GREEN="\e[32m"; BLUE="\e[34m"; YELLOW="\e[33m"; RED="\e[31m"; RESET="\e[0m"
-banner() { echo -e "\n${BLUE}==> $1${RESET}"; }
-success() { echo -e "${GREEN}[✓] $1${RESET}"; }
-info() { echo -e "${YELLOW}[INFO] $1${RESET}"; }
-skip() { echo -e "${BLUE}[SKIP] $1${RESET}"; }
 
 main "$@"
