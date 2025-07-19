@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Installs Brave and Google Chrome on Ubuntu (by M Ash)
+# Install Brave and Google Chrome on Ubuntu
 
 #====================== LOGGING ==========================
 GREEN="\e[32m"; BLUE="\e[34m"; YELLOW="\e[33m"; RED="\e[31m"; RESET="\e[0m"
