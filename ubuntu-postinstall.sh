@@ -1,15 +1,12 @@
 #!/usr/bin/env bash
 # Ubuntu Post-Install Setup Script by M Ash
 
-#====================== LOGGING ==========================
 GREEN="\e[32m"; BLUE="\e[34m"; YELLOW="\e[33m"; RED="\e[31m"; RESET="\e[0m"
 banner() { echo -e "\n${BLUE}==> $1${RESET}"; }
 success() { echo -e "${GREEN}[✓] $1${RESET}"; }
 info() { echo -e "${YELLOW}[INFO] $1${RESET}"; }
 skip() { echo -e "${BLUE}[SKIP] $1${RESET}"; }
 error() { echo -e "${RED}[✗] $1${RESET}"; }
-
-#==================== TASK FUNCTIONS ======================
 
 enable_repos() {
   banner "Enabling additional APT repositories..."
@@ -32,44 +29,6 @@ enable_repos() {
   success "Repositories enabled"
 }
 
-install_flatpak() {
-  banner "Checking Flatpak and Flathub..."
-
-  if ! command -v flatpak &>/dev/null; then
-    info "Installing Flatpak..."
-    sudo apt install -y flatpak
-    success "Flatpak installed"
-  else skip "Flatpak already installed"; fi
-
-  if ! flatpak remote-list | grep -q flathub; then
-    info "Adding Flathub..."
-    sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo   
-    success "Flathub added"
-  else skip "Flathub already present"; fi
-}
-
-install_flatseal() {
-  banner "Installing Flatseal (Flatpak permission manager)..."
-
-  if flatpak list --app | grep -i "Flatseal" &>/dev/null; then
-    skip "Flatseal already installed"
-  else
-    flatpak install -y flathub com.github.tchx84.Flatseal
-    success "Flatseal installed"
-  fi
-}
-
-install_gearlever() {
-  banner "Installing Gear Lever (AppImage manager)..."
-
-  if flatpak list --app | grep -i "Gear Lever" &>/dev/null; then
-    skip "Gear Lever already installed"
-  else
-    flatpak install -y flathub it.mijorus.gearlever
-    success "Gear Lever installed"
-  fi
-}
-
 install_extras() {
   banner "Installing ubuntu-restricted-extras..."
 
@@ -78,7 +37,6 @@ install_extras() {
   else
     echo "ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true" | sudo debconf-set-selections
     echo "ubuntu-restricted-extras ubuntu-restricted-extras/accept-mscorefonts-eula select true" | sudo debconf-set-selections
-
     sudo apt install -y ubuntu-restricted-extras
     success "Restricted extras installed"
   fi
@@ -135,22 +93,17 @@ enable_trim() {
   }
 }
 
-#====================== EXECUTION ========================
-
 main() {
   sudo -v
   ( while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done ) 2>/dev/null &
 
   enable_repos || error "Failed to enable APT repositories"
-  install_flatpak || error "Failed to install Flatpak"
-  install_flatseal || error "Failed to install Flatseal"
-  # install_gearlever || error "Failed to install Gear Lever"
   install_extras || error "Failed to install ubuntu-restricted-extras"
   remove_snap_bloat || error "Failed to remove Snap packages"
   cleanup || error "Failed to clean up system"
   enable_trim || error "Failed to enable SSD TRIM"
 
-  echo -e "\n${GREEN}🎉 Post-install setup done!${RESET}"
+  echo -e "\n${GREEN}🎉 Post-install setup done! Flatpak-related tasks are now separate.${RESET}"
 }
 
 main "$@"
