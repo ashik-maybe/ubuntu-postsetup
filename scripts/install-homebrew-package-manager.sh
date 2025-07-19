@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 #========================================
-# Homebrew Installer Script for Linux
-# Author: M Ash / Based on It’s FOSS tutorial
+# Install Homebrew Package Manager
 #========================================
 
 set -euo pipefail
