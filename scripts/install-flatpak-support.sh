@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Setup Flatpak, Flathub, and Flatseal
+# Setup Flatpak, Flathub, and Flatseal for managing permissions for flatpaks
 
 set -euo pipefail
 GREEN="\e[32m"; YELLOW="\e[33m"; BLUE="\e[34m"; RESET="\e[0m"
