@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Cloudflare WARP Setup Script for Ubuntu (by M Ash, 2025+)
+# Cloudflare WARP Setup Script for Ubuntu
 
 set -euo pipefail
 
