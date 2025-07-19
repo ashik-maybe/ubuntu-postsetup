@@ -1,5 +1,5 @@
 #!/bin/bash
-# install-virt.sh — Set up Virt-Manager, QEMU, and KVM on Ubuntu
+# Set up Virt-Manager, QEMU, and KVM on Ubuntu
 
 set -euo pipefail
 
