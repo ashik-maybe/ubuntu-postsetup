@@ -1,7 +1,13 @@
 #!/usr/bin/env bash
 # Installs Brave and Google Chrome on Ubuntu (by M Ash)
 
-set -euo pipefail
+#====================== LOGGING ==========================
+GREEN="\e[32m"; BLUE="\e[34m"; YELLOW="\e[33m"; RED="\e[31m"; RESET="\e[0m"
+banner() { echo -e "\n${BLUE}==> $1${RESET}"; }
+success() { echo -e "${GREEN}[✓] $1${RESET}"; }
+info() { echo -e "${YELLOW}[INFO] $1${RESET}"; }
+skip() { echo -e "${BLUE}[SKIP] $1${RESET}"; }
+error() { echo -e "${RED}[✗] $1${RESET}"; }
 
 #==================== TASK FUNCTIONS ======================
 
@@ -10,11 +16,12 @@ install_brave() {
 
   if command -v brave-browser &>/dev/null; then
     skip "Brave Browser already installed"
-  else
-    info "Installing Brave using official script..."
-    curl -fsS https://dl.brave.com/install.sh | sh
-    success "Brave Browser installed"
+    return
   fi
+
+  info "Installing Brave using official script..."
+  curl -fsS https://dl.brave.com/install.sh | sh
+  success "Brave Browser installed"
 }
 
 install_chrome() {
@@ -55,17 +62,10 @@ main() {
   sudo -v
   ( while true; do sudo -n true; sleep 60; kill -0 "$$" || exit; done ) 2>/dev/null &
 
-  install_brave
-  install_chrome
+  install_brave || error "Brave installation failed"
+  install_chrome || error "Chrome installation failed"
 
   echo -e "\n${GREEN}🎉 Brave and Chrome are ready to go! Happy browsing.${RESET}"
 }
-
-#====================== LOGGING ==========================
-GREEN="\e[32m"; BLUE="\e[34m"; YELLOW="\e[33m"; RED="\e[31m"; RESET="\e[0m"
-banner() { echo -e "\n${BLUE}==> $1${RESET}"; }
-success() { echo -e "${GREEN}[✓] $1${RESET}"; }
-info() { echo -e "${YELLOW}[INFO] $1${RESET}"; }
-skip() { echo -e "${BLUE}[SKIP] $1${RESET}"; }
 
 main "$@"
