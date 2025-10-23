@@ -35,7 +35,7 @@ install_flatseal() {
 main() {
   install_flatpak
   enable_flathub
-  install_flatseal
+  # install_flatseal
 }
 
 main "$@"
