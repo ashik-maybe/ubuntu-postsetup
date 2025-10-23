@@ -1,5 +1,7 @@
 # 🚀 Ubuntu Post-Install Scripts
 
+[![Fedora Workstation](https://img.shields.io/badge/Ubuntu%20Desktop-LTS-orange)](#)
+
 ---
 
 ## ⚙️ Before You Begin
