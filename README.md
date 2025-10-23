@@ -1,6 +1,7 @@
 # 🚀 Ubuntu Post-Install Scripts
 
-[![Fedora Workstation](https://img.shields.io/badge/Ubuntu%20Desktop-LTS-orange)](#)
+[![Bash](https://img.shields.io/badge/Bash-4EAA25?logo=gnubash&logoColor=fff)](#)
+[![Ubuntu](https://img.shields.io/badge/Ubuntu-E95420?logo=ubuntu&logoColor=white)](#)
 
 ---
 
